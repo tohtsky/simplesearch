@@ -1,3 +1,7 @@
 .clangd
 .vscode
 build
+*.so
+compile_commands.json
+.python-version
+pybind11
