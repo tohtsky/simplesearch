@@ -4,7 +4,7 @@
 #include <stdexcept>
 
 namespace invind {
-Indexer::Query::Query(Indexer *indexer, const json &query, bool or_scope)
+Indexer::Query::Query(const Indexer *indexer, const json &query, bool or_scope)
     : query_json(query), indexer(indexer), or_scope(or_scope) {}
 
 void Indexer::Query::raise_categorical_error(const std::string &colname) const {

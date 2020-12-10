@@ -20,7 +20,8 @@ struct Indexer {
 
   std::string add_index(const json &data);
   uint64_t size() const;
-  std::vector<uint64_t> query_execute(const json &query);
+  std::vector<uint64_t> query_execute(const json &query) const;
+  std::string repr() const;
 
 private:
   std::vector<Categorical> categorical_fields;
@@ -32,7 +33,7 @@ private:
   class Query {
 
   public:
-    Query(Indexer *indexer, const json &query, bool or_scope);
+    Query(const Indexer *indexer, const json &query, bool or_scope);
 
     SortedVector execute() const;
 
