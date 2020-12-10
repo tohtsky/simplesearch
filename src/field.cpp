@@ -49,12 +49,12 @@ ManyToMany::include_all(const std::vector<std::string> &values) const {
 }
 
 SortedVector
-ManyToMany::include_one(const std::vector<std::string> &values) const {
+Categorical::include_one(const std::vector<std::string> &values) const {
   if (values.empty()) {
     return SortedVector{};
   }
-  SortedVector result = this->get_match(values[0]);
-  for (uint64_t i = 1; i < values.size(); i++) {
+  SortedVector result(false);
+  for (uint64_t i = 0; i < values.size(); i++) {
     result = result.set_or(this->get_match(values[i]));
   }
   return result;

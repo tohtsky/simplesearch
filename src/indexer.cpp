@@ -3,6 +3,7 @@
 #include "nlohmann/json.hpp"
 #include <bits/stdint-uintn.h>
 #include <cstdint>
+#include <sstream>
 #include <stdexcept>
 
 namespace invind {
@@ -28,7 +29,8 @@ Indexer &Indexer::add_many_to_many(std::string field_name) {
   mtom_fields.emplace_back(ptr);
   return *this;
 }
-void Indexer::add_index(const json &data) {
+std::string Indexer::add_index(const json &data) {
+  std::stringstream ss;
   uint64_t index = this->size();
   this->indices.push_back(index);
   for (const auto &c : categorical_name_to_index_) {
@@ -38,6 +40,9 @@ void Indexer::add_index(const json &data) {
     } catch (nlohmann::json::out_of_range) {
       categorical_fields[c.second]->add_none(index);
     } catch (nlohmann::json::type_error) {
+      ss << "At Index [" << index
+         << "], found type error for categorical column \"" << c.first << "\","
+         << std::endl;
       categorical_fields[c.second]->add_none(index);
     }
   }
@@ -52,16 +57,21 @@ void Indexer::add_index(const json &data) {
     } catch (nlohmann::json::out_of_range) {
       continue;
     } catch (nlohmann::json::type_error) {
-      categorical_fields[c.second]->add_none(index);
+      ss << "At Index [" << index
+         << "], found type error for many_to_many column \"" << c.first << "\","
+         << std::endl;
+      continue;
     }
   }
+  return ss.str();
 }
 
 std::vector<uint64_t> Indexer::query_execute(const json &query) {
   Query query_obj(this, query, false);
   auto result = query_obj.execute();
   if (result.is_all()) {
-    return this->indices;
+    std::vector<uint64_t> rv(this->indices);
+    return rv;
   } else {
     return result.move_result();
   }

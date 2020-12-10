@@ -20,7 +20,7 @@ struct Indexer {
   Indexer &add_categorical(std::string field_name);
   Indexer &add_many_to_many(std::string field_name);
 
-  void add_index(const json &data);
+  std::string add_index(const json &data);
   uint64_t size() const;
   std::vector<uint64_t> query_execute(const json &query);
 
@@ -37,6 +37,9 @@ private:
     Query(Indexer *indexer, const json &query, bool or_scope);
 
     SortedVector execute() const;
+
+    void raise_categorical_error(const std::string &colname) const;
+    void raise_mtom_error(const std::string &colname) const;
 
     const Indexer *indexer;
     const nlohmann::json query_json;
