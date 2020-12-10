@@ -4,7 +4,6 @@
 #include "field.hpp"
 #include "invind/sorted_vector.hpp"
 #include "nlohmann/json.hpp"
-#include <bits/stdint-uintn.h>
 #include <cstdint>
 #include <memory>
 #include <unordered_map>

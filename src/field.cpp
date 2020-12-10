@@ -1,6 +1,5 @@
 #include "invind/field.hpp"
 #include "invind/sorted_vector.hpp"
-#include <bits/stdint-uintn.h>
 #include <cstddef>
 #include <cstdint>
 #include <stdexcept>

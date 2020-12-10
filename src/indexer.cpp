@@ -1,7 +1,6 @@
 #include "invind/indexer.hpp"
 #include "invind/field.hpp"
 #include "nlohmann/json.hpp"
-#include <bits/stdint-uintn.h>
 #include <cstdint>
 #include <sstream>
 #include <stdexcept>

@@ -2,13 +2,13 @@
 #define INVIND_SORTED_VECTOR_HPP
 
 #include <algorithm>
-#include <bits/stdint-uintn.h>
 #include <iterator>
 #include <stdexcept>
 #include <vector>
+#include <cstdint>
 
 namespace invind {
-
+using std::uint64_t;
 class SortedVector {
   using IndexType = std::uint64_t;
   using VectorType = std::vector<IndexType>;

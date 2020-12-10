@@ -24,11 +24,18 @@ ext_modules = [
         # Example: passing in the version to the compiled code
         define_macros=[("VERSION_INFO", __version__)],
         include_dirs=["include"],
+        cxx_std="11",
     )
 ]
 
+install_requires = [
+    "pybind11>=2.6.0",
+    "numpy >= 1.11",
+]
+
+
 setup(
-    name="python_example",
+    name="invind",
     version=__version__,
     author="Tomoki Ohtsuki",
     author_email="tomoki.ohtsuki.19937@outlook.jp",
@@ -36,10 +43,8 @@ setup(
     long_description="",
     ext_modules=ext_modules,
     extras_require={"test": "pytest"},
-    install_requires=[
-        "pybind11>=2.6.0",
-        "numpy >= 1.11",
-    ],
+    setup_requires=install_requires,
+    install_requires=install_requires,
     cmdclass={"build_ext": build_ext},
     zip_safe=False,
 )

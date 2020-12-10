@@ -2,7 +2,6 @@
 #define INVIND_FIELD_HPP
 
 #include "sorted_vector.hpp"
-#include <bits/stdint-uintn.h>
 #include <cstddef>
 #include <cstdint>
 #include <unordered_map>
