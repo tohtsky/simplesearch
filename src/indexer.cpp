@@ -11,29 +11,28 @@ uint64_t Indexer::size() const { return this->indices.size(); }
 
 std::string Indexer::repr() const {
   std::stringstream ss;
-  ss<< "Indexer(size=" << this->size() << ", categorical_columns=[";
+  ss << "Indexer(size=" << this->size() << ", categorical_columns=[";
   int i = 0;
-  for(const auto& c: this->categorical_name_to_index_){
+  for (const auto &c : this->categorical_name_to_index_) {
     ss << "\"" << c.first << "\"";
-    if (i < (static_cast<int>(this->categorical_name_to_index_.size())-1)){
-      ss<< ", ";
-    }  
+    if (i < (static_cast<int>(this->categorical_name_to_index_.size()) - 1)) {
+      ss << ", ";
+    }
     i++;
   }
   ss << "], many_to_many_columns=[";
 
   i = 0;
-  for(const auto& c: this->mtom_name_to_index_){
+  for (const auto &c : this->mtom_name_to_index_) {
     ss << "\"" << c.first << "\"";
-    if (i < (static_cast<int>(this->mtom_name_to_index_.size())-1)){
-      ss<< "\", ";
-    }  
+    if (i < (static_cast<int>(this->mtom_name_to_index_.size()) - 1)) {
+      ss << "\", ";
+    }
     i++;
   }
   ss << "]";
-  ss<< ")";
+  ss << ")";
   return ss.str();
-
 }
 
 Indexer &Indexer::add_categorical(std::string field_name) {
@@ -90,7 +89,7 @@ std::string Indexer::add_index(const json &data) {
   return ss.str();
 }
 
-std::vector<uint64_t> Indexer::query_execute(const json &query) const{
+std::vector<uint64_t> Indexer::query_execute(const json &query) const {
   Query query_obj(this, query, false);
   auto result = query_obj.execute();
   if (result.is_all()) {

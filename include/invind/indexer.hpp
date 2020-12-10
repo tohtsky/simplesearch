@@ -6,6 +6,7 @@
 #include "nlohmann/json.hpp"
 #include <cstdint>
 #include <memory>
+#include <string>
 #include <unordered_map>
 
 using json = nlohmann::json;

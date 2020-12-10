@@ -4,6 +4,7 @@
 #include "sorted_vector.hpp"
 #include <cstddef>
 #include <cstdint>
+#include <string>
 #include <unordered_map>
 #include <vector>
 

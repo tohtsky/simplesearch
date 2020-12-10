@@ -2,10 +2,12 @@
 #define INVIND_SORTED_VECTOR_HPP
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <iterator>
 #include <stdexcept>
+#include <string>
 #include <vector>
-#include <cstdint>
 
 namespace invind {
 using std::uint64_t;
