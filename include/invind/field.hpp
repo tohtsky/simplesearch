@@ -11,7 +11,6 @@
 namespace invind {
 struct BaseField {
   BaseField();
-  virtual uint64_t size() const;
 
 protected:
   std::vector<SortedVector> indices;

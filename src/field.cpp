@@ -3,19 +3,23 @@
 #include <cstddef>
 #include <cstdint>
 #include <stdexcept>
+#include <iostream>
 
 namespace invind {
 BaseField::BaseField() {}
-uint64_t BaseField::size() const { return this->indices.size(); }
 
-Categorical::Categorical() {}
+Categorical::Categorical() : BaseField(), value_to_indices() {
+}
+
 void Categorical::add_value(const std::string &value, uint64_t index) {
-  try {
-    auto field_index = this->value_to_indices.at(value);
+  auto it = value_to_indices.find(value);
+  if (it != value_to_indices.end()) {
+    auto field_index = it->second;
     this->indices[field_index].push_back(index);
-  } catch (std::out_of_range &_) {
+
+  } else {
     uint64_t new_index = this->value_to_indices.size();
-    this->value_to_indices[value] = new_index;
+    this->value_to_indices.insert({value, new_index});
     this->indices.emplace_back();
     this->indices.back().push_back(index);
   }

@@ -12,9 +12,9 @@ TEST_CASE("basic", "[basic]") {
   worker.add_many_to_many("job_categories");
 
   json data_1 =
-      R"({"gender": "M", "location": "J01", "job_categories": ["1", "2", "3"]})"_json;
+      R"({"gender": "M", "location": "K01", "job_categories": ["1", "2", "3"]})"_json;
   json data_2 =
-      R"({"gender": "F", "location": "J01", "job_categories": ["1"]})"_json;
+      R"({"gender": "F", "location": "K01", "job_categories": ["1"]})"_json;
   json data_3 =
       R"({"gender": "M", "location": "J02", "job_categories": null})"_json;
   json data_4 =
@@ -61,7 +61,7 @@ TEST_CASE("basic", "[basic]") {
   }
   {
     auto result = worker.query_execute(
-        R"({"gender": ["M"], "location": ["J01", "J02"], "job_categories": {"contains_one": ["2", "1"]}})"_json);
+        R"({"gender": ["M"], "location": ["K01", "J02"], "job_categories": {"contains_one": ["2", "1"]}})"_json);
     REQUIRE(result.size() == 1);
     REQUIRE(result.at(0) == 0);
   }
