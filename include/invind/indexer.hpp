@@ -12,8 +12,6 @@
 using json = nlohmann::json;
 namespace invind {
 struct Indexer {
-  using CategoricalFieldPtr = std::unique_ptr<Categorical>;
-  using ManyToManyPtr = std::unique_ptr<ManyToMany>;
 
   Indexer();
 
@@ -25,8 +23,8 @@ struct Indexer {
   std::vector<uint64_t> query_execute(const json &query);
 
 private:
-  std::vector<CategoricalFieldPtr> categorical_fields;
-  std::vector<ManyToManyPtr> mtom_fields;
+  std::vector<Categorical> categorical_fields;
+  std::vector<ManyToMany> mtom_fields;
   std::unordered_map<std::string, uint64_t> categorical_name_to_index_;
   std::unordered_map<std::string, uint64_t> mtom_name_to_index_;
 

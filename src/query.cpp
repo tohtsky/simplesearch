@@ -42,15 +42,15 @@ SortedVector Indexer::Query::execute() const {
         auto query = query_value_ref.get<std::string>();
         if (this->or_scope) {
           result = result.set_or(
-              indexer->categorical_fields[col_index.second]->get_match(query));
+              indexer->categorical_fields[col_index.second].get_match(query));
         } else {
           result = result.set_and(
-              indexer->categorical_fields[col_index.second]->get_match(query));
+              indexer->categorical_fields[col_index.second].get_match(query));
         }
       } else if (query_value_ref.is_array()) {
         auto query_vals = query_value_ref.get<std::vector<std::string>>();
         SortedVector subresult =
-            indexer->categorical_fields[col_index.second]->include_one(
+            indexer->categorical_fields[col_index.second].include_one(
                 query_vals);
         if (this->or_scope) {
           result = result.set_or(subresult);
@@ -98,9 +98,9 @@ SortedVector Indexer::Query::execute() const {
       auto &f = indexer->mtom_fields[col_index.second];
       SortedVector subresult;
       if (contains_one) {
-        subresult = f->include_one(codes);
+        subresult = f.include_one(codes);
       } else {
-        subresult = f->include_all(codes);
+        subresult = f.include_all(codes);
       }
 
       if (this->or_scope) {
