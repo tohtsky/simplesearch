@@ -40,7 +40,7 @@ Indexer &Indexer::add_categorical(std::string field_name) {
         categorical_name_to_index_.cend())) {
     throw std::invalid_argument("duplicate field name");
   }
-  categorical_name_to_index_[field_name] = categorical_name_to_index_.size();
+  categorical_name_to_index_.insert({field_name, categorical_fields.size()});
   categorical_fields.emplace_back();
   return *this;
 }
@@ -48,25 +48,27 @@ Indexer &Indexer::add_many_to_many(std::string field_name) {
   if (!(mtom_name_to_index_.find(field_name) == mtom_name_to_index_.cend())) {
     throw std::invalid_argument("duplicate field name");
   }
-  mtom_name_to_index_[field_name] = mtom_name_to_index_.size();
+  mtom_name_to_index_.insert({field_name, mtom_fields.size()});
   mtom_fields.emplace_back();
   return *this;
 }
+
 std::string Indexer::add_index(const json &data) {
   std::stringstream ss;
   uint64_t index = this->size();
   this->indices.push_back(index);
-  for (const auto &c : categorical_name_to_index_) {
+  for (auto iter = categorical_name_to_index_.begin();
+       iter != categorical_name_to_index_.end(); iter++) {
     try {
-      std::string category = data.at(c.first).get<std::string>();
-      categorical_fields[c.second].add_value(category, index);
+      std::string category = data.at(iter->first).get<std::string>();
+      categorical_fields[iter->second].add_value(category, index);
     } catch (nlohmann::json::out_of_range) {
-      categorical_fields[c.second].add_none(index);
+      categorical_fields[iter->second].add_none(index);
     } catch (nlohmann::json::type_error) {
       ss << "At Index [" << index
-         << "], found type error for categorical column \"" << c.first << "\","
-         << std::endl;
-      categorical_fields[c.second].add_none(index);
+         << "], found type error for categorical column \"" << iter->first
+         << "\"," << std::endl;
+      categorical_fields[iter->second].add_none(index);
     }
   }
   for (const auto &c : mtom_name_to_index_) {
