@@ -46,14 +46,17 @@ public:
       if (val < back_element) {
         throw std::invalid_argument(
             "push back operation will destroy the sort ordering.");
+      } else if (val > back_element) {
+        buffer_.push_back(val);
       }
+    } else {
+      buffer_.push_back(val);
     }
-    buffer_.push_back(val);
   }
 
   inline void reserve(const uint64_t cap) { buffer_.reserve(cap); }
 
-  inline self_type set_and(const self_type &other) {
+  inline self_type set_and(const self_type &other) const {
     if (this->all_true) {
       return other;
     } else if (other.all_true) {
@@ -62,18 +65,18 @@ public:
     self_type result;
     std::set_intersection(this->buffer_.cbegin(), this->buffer_.cend(),
                           other.buffer_.cbegin(), other.buffer_.cend(),
-                          std::inserter(result.buffer_, result.buffer_.end()));
+                          std::back_inserter(result.buffer_));
     return result;
   }
 
-  inline self_type set_or(const self_type &other) {
+  inline self_type set_or(const self_type &other) const {
     if (this->all_true || other.all_true) {
       return SortedVector{true};
     }
     self_type result;
     std::set_union(this->buffer_.cbegin(), this->buffer_.cend(),
                    other.buffer_.cbegin(), other.buffer_.cend(),
-                   std::inserter(result.buffer_, result.buffer_.end()));
+                   std::back_inserter(result.buffer_));
     return result;
   }
 

@@ -1,11 +1,30 @@
 #include "simplesearch/field.hpp"
 #include "simplesearch/sorted_vector.hpp"
+#include <bits/stdint-uintn.h>
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
 #include <stdexcept>
 
 namespace simplesearch {
+using sorted_vectors_type = std::vector<const SortedVector *>;
+inline SortedVector
+_mergeMultipleSortedVectors(const std::vector<const SortedVector *> &vs) {
+  if (vs.size() == 0) {
+    return SortedVector{false};
+  } else if (vs.size() == 1) {
+    SortedVector result(*vs[0]);
+    return result;
+  } else if (vs.size() == 2) {
+    return vs[0]->set_or(*vs[1]);
+  }
+  std::vector<uint64_t> result;
+  for (auto ptr : vs) {
+    std::copy(ptr->cbegin(), ptr->cend(), std::back_inserter(result));
+  }
+  std::sort(result.begin(), result.end());
+  return SortedVector{std::move(result)};
+}
 BaseField::BaseField() {}
 
 Categorical::Categorical() : BaseField(), value_to_indices() {}
@@ -83,117 +102,127 @@ SortedVector Numeric::get_match(Key value) const {
 }
 
 SortedVector Numeric::get_range_ge_le(Key le, Key ge) const {
-  SortedVector result;
   if (le > ge) {
-    return result;
+
+    SortedVector result;
   }
   auto it = value_to_indices.lower_bound(le);
   auto last = value_to_indices.upper_bound(ge);
+  sorted_vectors_type svs;
   while (it != last) {
-    result = result.set_or(it->second);
+    svs.push_back(&(it->second));
     ++it;
   }
-  return result;
+  return _mergeMultipleSortedVectors(svs);
 }
 SortedVector Numeric::get_range_ge_lt(Key le, Key gt) const {
-  SortedVector result;
   if (le >= gt) {
+    SortedVector result;
     return result;
   }
   auto it = value_to_indices.lower_bound(le);
   auto last = value_to_indices.upper_bound(gt);
+  sorted_vectors_type svs;
   while (it != last) {
     if (it->first < gt) {
-      result = result.set_or(it->second);
+      svs.push_back(&(it->second));
     }
     ++it;
   }
-  return result;
+  return _mergeMultipleSortedVectors(svs);
 }
 SortedVector Numeric::get_range_gt_le(Key lt, Key ge) const {
-  SortedVector result;
   if (lt >= ge) {
+
+    SortedVector result;
     return result;
   }
   auto it = value_to_indices.lower_bound(lt);
   auto last = value_to_indices.upper_bound(ge);
+  sorted_vectors_type svs;
   while (it != last) {
     if (it->first > lt) {
-      result = result.set_or(it->second);
+      svs.push_back(&(it->second));
     }
     ++it;
   }
-  return result;
+  return _mergeMultipleSortedVectors(svs);
 }
 SortedVector Numeric::get_range_gt_lt(Key lt, Key gt) const {
-  SortedVector result;
   if (lt >= gt) {
+    SortedVector result;
     return result;
   }
   auto it = value_to_indices.lower_bound(lt);
   auto last = value_to_indices.upper_bound(gt);
+  sorted_vectors_type svs;
   while (it != last) {
     if ((it->first > lt) && (it->first < gt)) {
-      result = result.set_or(it->second);
+      svs.push_back(&(it->second));
     }
     ++it;
   }
-  return result;
+  return _mergeMultipleSortedVectors(svs);
 }
 
 SortedVector Numeric::get_range_ge(Key le) const {
-  SortedVector result;
   auto it = value_to_indices.lower_bound(le);
+  sorted_vectors_type svs;
   while (it != value_to_indices.cend()) {
-    result = result.set_or(it->second);
+    svs.push_back(&(it->second));
     ++it;
   }
-  return result;
+  return _mergeMultipleSortedVectors(svs);
 }
 SortedVector Numeric::get_range_gt(Key lt) const {
-  SortedVector result;
   auto it = value_to_indices.lower_bound(lt);
+  sorted_vectors_type svs;
+
   while (it != value_to_indices.cend()) {
     if (it->first > lt) {
-      result = result.set_or(it->second);
+      svs.push_back(&(it->second));
     }
     ++it;
   }
-  return result;
+  return _mergeMultipleSortedVectors(svs);
 }
 SortedVector Numeric::get_range_le(Key ge) const {
-  SortedVector result;
   if (value_to_indices.lower_bound(ge) == value_to_indices.cend()) {
     // every element x >= ge
     // for all value, x >= ge
     // x <= ge
+
+    SortedVector result;
     return result;
   }
   auto iter = value_to_indices.cbegin();
   auto last = value_to_indices.upper_bound(ge);
+  sorted_vectors_type svs;
   while (iter != last) {
-    result = result.set_or(iter->second);
+    svs.push_back(&(iter->second));
     ++iter;
   }
-  return result;
+  return _mergeMultipleSortedVectors(svs);
 }
 
 SortedVector Numeric::get_range_lt(Key ge) const {
-  SortedVector result;
   if (value_to_indices.lower_bound(ge) == value_to_indices.cend()) {
     // for all value, x >= ge
     // x <= ge
+
+    SortedVector result;
     return result;
   }
   auto iter = value_to_indices.cbegin();
   auto last = value_to_indices.upper_bound(ge);
+  sorted_vectors_type svs;
   while (iter != last) {
     if (iter->first < ge) {
-      result = result.set_or(iter->second);
+      svs.push_back(&(iter->second));
     }
     ++iter;
   }
-  return result;
+  return _mergeMultipleSortedVectors(svs);
 }
 SortedVector Numeric::get_none() const { return this->nones; }
 
