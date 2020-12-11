@@ -1,6 +1,5 @@
 #include "simplesearch/field.hpp"
 #include "simplesearch/sorted_vector.hpp"
-#include <bits/stdint-uintn.h>
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
@@ -188,10 +187,7 @@ SortedVector Numeric::get_range_gt(Key lt) const {
 }
 SortedVector Numeric::get_range_le(Key ge) const {
   if (value_to_indices.lower_bound(ge) == value_to_indices.cend()) {
-    // every element x >= ge
     // for all value, x >= ge
-    // x <= ge
-
     SortedVector result;
     return result;
   }

@@ -5,7 +5,7 @@ set(CMAKE_BUILD_TYPE Debug)
 #set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #set(GLIBCXX_DEBUG ON)
 
-set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -coverage -O0 -std=c++11") # 追加
+set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -coverage -O0 -g -std=c++11") # 追加
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -coverage") # 追加
 include_directories(include)
 add_executable(unit_tests tests/test_numerical.cpp  tests/test_indexer.cpp tests/test_sorted_vector.cpp src/field.cpp src/indexer.cpp src/query.cpp)

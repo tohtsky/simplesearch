@@ -7,3 +7,4 @@ compile_commands.json
 pybind11
 tmp
 simplesearch.egg-info
+btree
