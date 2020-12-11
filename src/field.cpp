@@ -2,14 +2,13 @@
 #include "invind/sorted_vector.hpp"
 #include <cstddef>
 #include <cstdint>
-#include <stdexcept>
 #include <iostream>
+#include <stdexcept>
 
 namespace invind {
 BaseField::BaseField() {}
 
-Categorical::Categorical() : BaseField(), value_to_indices() {
-}
+Categorical::Categorical() : BaseField(), value_to_indices() {}
 
 void Categorical::add_value(const std::string &value, uint64_t index) {
   auto it = value_to_indices.find(value);
@@ -62,4 +61,140 @@ Categorical::include_one(const std::vector<std::string> &values) const {
   }
   return result;
 }
+
+Numeric::Numeric() : value_to_indices(), nones() {}
+void Numeric::add_value(Key value, uint64_t index) {
+  auto iterator = value_to_indices.find(value);
+  if (iterator == value_to_indices.end()) {
+    SortedVector index_vector;
+    index_vector.push_back(index);
+    value_to_indices.insert({value, index_vector});
+  } else {
+    iterator->second.push_back(index);
+  }
+}
+void Numeric::add_none(uint64_t index) { nones.push_back(index); }
+SortedVector Numeric::get_match(Key value) const {
+  auto iterator = value_to_indices.find(value);
+  if (iterator == value_to_indices.cend()) {
+    return SortedVector{};
+  }
+  return iterator->second;
+}
+
+SortedVector Numeric::get_range_ge_le(Key le, Key ge) const {
+  SortedVector result;
+  if (le > ge) {
+    return result;
+  }
+  auto it = value_to_indices.lower_bound(le);
+  auto last = value_to_indices.upper_bound(ge);
+  while (it != last) {
+    result = result.set_or(it->second);
+    ++it;
+  }
+  return result;
+}
+SortedVector Numeric::get_range_ge_lt(Key le, Key gt) const {
+  SortedVector result;
+  if (le >= gt) {
+    return result;
+  }
+  auto it = value_to_indices.lower_bound(le);
+  auto last = value_to_indices.upper_bound(gt);
+  while (it != last) {
+    if (it->first < gt) {
+      result = result.set_or(it->second);
+    }
+    ++it;
+  }
+  return result;
+}
+SortedVector Numeric::get_range_gt_le(Key lt, Key ge) const {
+  SortedVector result;
+  if (lt >= ge) {
+    return result;
+  }
+  auto it = value_to_indices.lower_bound(lt);
+  auto last = value_to_indices.upper_bound(ge);
+  while (it != last) {
+    if (it->first > lt) {
+      result = result.set_or(it->second);
+    }
+    ++it;
+  }
+  return result;
+}
+SortedVector Numeric::get_range_gt_lt(Key lt, Key gt) const {
+  SortedVector result;
+  if (lt >= gt) {
+    return result;
+  }
+  auto it = value_to_indices.lower_bound(lt);
+  auto last = value_to_indices.upper_bound(gt);
+  while (it != last) {
+    if ((it->first > lt) && (it->first < gt)) {
+      result = result.set_or(it->second);
+    }
+    ++it;
+  }
+  return result;
+}
+
+SortedVector Numeric::get_range_ge(Key le) const {
+  SortedVector result;
+  auto it = value_to_indices.lower_bound(le);
+  while (it != value_to_indices.cend()) {
+    result = result.set_or(it->second);
+    ++it;
+  }
+  return result;
+}
+SortedVector Numeric::get_range_gt(Key lt) const {
+  SortedVector result;
+  auto it = value_to_indices.lower_bound(lt);
+  while (it != value_to_indices.cend()) {
+    if (it->first > lt) {
+      result = result.set_or(it->second);
+    }
+    ++it;
+  }
+  return result;
+}
+SortedVector Numeric::get_range_le(Key ge) const {
+  SortedVector result;
+  if (value_to_indices.lower_bound(ge) == value_to_indices.cend()) {
+    // every element x >= ge
+    // for all value, x >= ge
+    // x <= ge
+    return result;
+  }
+  auto iter = value_to_indices.cbegin();
+  auto last = value_to_indices.upper_bound(ge);
+  while (iter != last) {
+    result = result.set_or(iter->second);
+    ++iter;
+  }
+  return result;
+}
+
+SortedVector Numeric::get_range_lt(Key ge) const {
+  SortedVector result;
+  if (value_to_indices.lower_bound(ge) == value_to_indices.cend()) {
+    // for all value, x >= ge
+    // x <= ge
+    return result;
+  }
+  auto iter = value_to_indices.cbegin();
+  auto last = value_to_indices.upper_bound(ge);
+  while (iter != last) {
+    if (iter->first < ge) {
+      result = result.set_or(iter->second);
+    }
+    ++iter;
+  }
+  return result;
+}
+SortedVector Numeric::get_none() const { return this->nones; }
+
 } // namespace invind

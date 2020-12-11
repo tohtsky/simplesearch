@@ -15,7 +15,7 @@ std::string Indexer::repr() const {
   int i = 0;
   for (const auto &c : this->categorical_name_to_index_) {
     ss << "\"" << c.first << "\"";
-    if (i < (static_cast<int>(this->categorical_name_to_index_.size()) - 1)) {
+    if (i < (static_cast<int>(this->categorical_fields.size()) - 1)) {
       ss << ", ";
     }
     i++;
@@ -25,8 +25,17 @@ std::string Indexer::repr() const {
   i = 0;
   for (const auto &c : this->mtom_name_to_index_) {
     ss << "\"" << c.first << "\"";
-    if (i < (static_cast<int>(this->mtom_name_to_index_.size()) - 1)) {
-      ss << "\", ";
+    if (i < (static_cast<int>(this->mtom_fields.size()) - 1)) {
+      ss << ", ";
+    }
+    i++;
+  }
+  ss << "], numeric_columns=[";
+  i = 0;
+  for (const auto &c : this->numeric_name_to_index_) {
+    ss << "\"" << c.first << "\"";
+    if (i < (static_cast<int>(this->num_fields.size()) - 1)) {
+      ss << ", ";
     }
     i++;
   }
@@ -44,12 +53,23 @@ Indexer &Indexer::add_categorical(std::string field_name) {
   categorical_fields.emplace_back();
   return *this;
 }
+
 Indexer &Indexer::add_many_to_many(std::string field_name) {
   if (!(mtom_name_to_index_.find(field_name) == mtom_name_to_index_.cend())) {
     throw std::invalid_argument("duplicate field name");
   }
   mtom_name_to_index_.insert({field_name, mtom_fields.size()});
   mtom_fields.emplace_back();
+  return *this;
+}
+
+Indexer &Indexer::add_numerical(std::string field_name) {
+  if (!(numeric_name_to_index_.find(field_name) ==
+        numeric_name_to_index_.cend())) {
+    throw std::invalid_argument("duplicate field name");
+  }
+  numeric_name_to_index_.insert({field_name, num_fields.size()});
+  num_fields.emplace_back();
   return *this;
 }
 
@@ -85,6 +105,25 @@ std::string Indexer::add_index(const json &data) {
       ss << "At Index [" << index
          << "], found type error for many_to_many column \"" << c.first << "\","
          << std::endl;
+      continue;
+    }
+  }
+
+  for (const auto &c : numeric_name_to_index_) {
+    std::string keyname = c.first;
+    try {
+      auto &d = data.at(keyname);
+      if (d.is_null()) {
+        num_fields[c.second].add_none(index);
+      } else {
+        auto value = d.get<double>();
+        num_fields[c.second].add_value(value, index);
+      }
+    } catch (nlohmann::json::out_of_range) {
+      continue;
+    } catch (nlohmann::json::type_error) {
+      ss << "At Index [" << index << "], found type error for numeric column \""
+         << c.first << "\"," << std::endl;
       continue;
     }
   }

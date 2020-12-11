@@ -7,6 +7,7 @@
 using namespace invind;
 TEST_CASE("basic", "[basic]") {
   Indexer worker;
+
   worker.add_categorical("gender");
   worker.add_categorical("location");
   worker.add_many_to_many("job_categories");
