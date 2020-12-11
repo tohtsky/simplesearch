@@ -19,7 +19,7 @@ TEST_CASE("basic", "[basic]") {
   json data_3 =
       R"({"gender": "M", "location": "J02", "job_categories": null})"_json;
   json data_4 =
-      R"({"gender": 1, "location": "J02", "job_categories":["2", "3"]})"_json; // bad
+      R"({"gender": null, "location": "J02", "job_categories":["2", "3"]})"_json; // bad
                                                                                // type
                                                                                // for gender
 
@@ -65,5 +65,15 @@ TEST_CASE("basic", "[basic]") {
         R"({"gender": ["M"], "location": ["K01", "J02"], "job_categories": {"contains_one": ["2", "1"]}})"_json);
     REQUIRE(result.size() == 1);
     REQUIRE(result.at(0) == 0);
+  }
+  {
+    auto result = worker.query_execute(
+        R"({"gender": "L"})"_json);
+        REQUIRE(result.size() == 0);
+  }
+  {
+    auto result = worker.query_execute(
+        R"({"gender": null})"_json);
+    REQUIRE(result.size() == 1);
   }
 };

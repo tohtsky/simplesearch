@@ -43,26 +43,33 @@ void Indexer::Query::raise_numeric_error(const std::string &colname) const {
 SortedVector Indexer::Query::execute() const {
   SortedVector result{true};
   // categorical
+
   for (const auto &col_index : indexer->categorical_name_to_index_) {
+    auto & field = indexer->categorical_fields[col_index.second];
     try {
       auto &query_value_ref = query_json.at(col_index.first);
       if (query_value_ref.is_null()) {
-        // nothing to specify
-        continue;
+        if (this->or_scope) {
+          result = result.set_or(
+              field.get_none());
+        } else {
+          result = result.set_and(
+              field.get_none());
+        }
       }
       if (query_value_ref.is_string()) {
         auto query = query_value_ref.get<std::string>();
         if (this->or_scope) {
           result = result.set_or(
-              indexer->categorical_fields[col_index.second].get_match(query));
+              field.get_match(query));
         } else {
           result = result.set_and(
-              indexer->categorical_fields[col_index.second].get_match(query));
+              field.get_match(query));
         }
       } else if (query_value_ref.is_array()) {
         auto query_vals = query_value_ref.get<std::vector<std::string>>();
         SortedVector subresult =
-            indexer->categorical_fields[col_index.second].include_one(
+            field.include_one(
                 query_vals);
         if (this->or_scope) {
           result = result.set_or(subresult);
@@ -151,7 +158,7 @@ SortedVector Indexer::Query::execute() const {
         auto end = query_value_ref.cend();
         bool found_match = false, found_gte = false, found_gt = false,
              found_lte = false, found_lt = false;
-        double match, gte, gt, lte, lt;
+        double match, gte, gt, lte, lt = 0;
         SortedVector subresult;
         {
           auto iter = query_value_ref.find("match");

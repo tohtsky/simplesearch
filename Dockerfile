@@ -32,7 +32,7 @@ RUN mkdir build && cd build && cmake .. && \
 RUN cd build/CMakeFiles/unit_tests.dir && \
     echo `ls` && \
     lcov -d `pwd` -c -o coverage.info && \
-    lcov -r coverage.info catch.hpp */c++/* */nlohmann/* */tests/* -o coverageFiltered.info && \
+    lcov -r coverage.info catch.hpp */c++/* */cpp-btree/* */nlohmann/* */tests/* -o coverageFiltered.info && \
     genhtml -o /work/generated coverageFiltered.info
 
 WORKDIR /work/generated/
