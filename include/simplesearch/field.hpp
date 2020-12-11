@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace invind {
+namespace simplesearch {
 struct BaseField {
   BaseField();
 
@@ -60,26 +60,10 @@ struct Numeric {
 protected:
   using MapType = std::map<Key, SortedVector>;
   MapType value_to_indices;
-  inline MapType::const_iterator le_iterator(Key v) {
-    return value_to_indices.lower_bound(v);
-  }
-  inline MapType::const_iterator lt_iterator(Key v) {
-    auto cand_iter = value_to_indices.lower_bound(v);
-    if (cand_iter == value_to_indices.cend()) {
-      return cand_iter;
-    } else {
-      if (cand_iter->first == v) {
-        cand_iter++;
-        return cand_iter;
-      } else {
-        return cand_iter;
-      }
-    }
-  }
 
   SortedVector nones;
 };
 
-} // namespace invind
+} // namespace simplesearch
 
 #endif

@@ -1,5 +1,5 @@
-#include "invind/indexer.hpp"
-#include "invind/sorted_vector.hpp"
+#include "simplesearch/indexer.hpp"
+#include "simplesearch/sorted_vector.hpp"
 #include "nlohmann/json.hpp"
 #include "pybind11_json/pybind11_json.hpp"
 #include <atomic>
@@ -11,7 +11,7 @@
 namespace py = pybind11;
 namespace nl = nlohmann;
 using namespace pybind11::literals;
-using namespace invind;
+using namespace simplesearch;
 
 template <typename T> py::array_t<T> vector_to_np(const std::vector<T> &v) {
   py::array_t<T> np_result(v.size());
@@ -23,12 +23,13 @@ template <typename T> py::array_t<T> vector_to_np(const std::vector<T> &v) {
   return np_result;
 }
 
-PYBIND11_MODULE(invind, m) {
+PYBIND11_MODULE(simplesearch, m) {
   m.doc() = "My awesome module";
   py::class_<Indexer>(m, "Indexer")
       .def(py::init<>())
       .def("add_categorical_field", &Indexer::add_categorical)
       .def("add_many_to_many_field", &Indexer::add_many_to_many)
+      .def("add_numerical_field", &Indexer::add_numerical)
       .def("add_index", &Indexer::add_index)
       .def("query_execute",
            [](const Indexer &indexer, const nl::json &query) {

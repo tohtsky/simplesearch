@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace invind {
+namespace simplesearch {
 using std::uint64_t;
 class SortedVector {
   using IndexType = std::uint64_t;
@@ -87,6 +87,6 @@ private:
   std::vector<IndexType> buffer_;
   bool all_true;
 };
-} // namespace invind
+} // namespace simplesearch
 
 #endif

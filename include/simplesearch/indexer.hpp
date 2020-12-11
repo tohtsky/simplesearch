@@ -2,7 +2,7 @@
 #define INVIND_DATA_HPP
 
 #include "field.hpp"
-#include "invind/sorted_vector.hpp"
+#include "simplesearch/sorted_vector.hpp"
 #include "nlohmann/json.hpp"
 #include <cstdint>
 #include <memory>
@@ -10,7 +10,7 @@
 #include <unordered_map>
 
 using json = nlohmann::json;
-namespace invind {
+namespace simplesearch {
 struct Indexer {
 
   Indexer();
@@ -49,6 +49,6 @@ private:
     const bool or_scope;
   };
 };
-}; // namespace invind
+}; // namespace simplesearch
 
 #endif

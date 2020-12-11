@@ -1,11 +1,11 @@
-#include "invind/indexer.hpp"
-#include "invind/field.hpp"
+#include "simplesearch/indexer.hpp"
+#include "simplesearch/field.hpp"
 #include "nlohmann/json.hpp"
 #include <cstdint>
 #include <sstream>
 #include <stdexcept>
 
-namespace invind {
+namespace simplesearch {
 Indexer::Indexer() {}
 uint64_t Indexer::size() const { return this->indices.size(); }
 
@@ -141,4 +141,4 @@ std::vector<uint64_t> Indexer::query_execute(const json &query) const {
   }
 }
 
-} // namespace invind
+} // namespace simplesearch

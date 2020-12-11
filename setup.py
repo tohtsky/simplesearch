@@ -27,7 +27,7 @@ basedir = os.path.dirname(__file__)
 include_dir_user = os.path.join(basedir, "include")
 ext_modules = [
     Extension(
-        "invind",
+        "simplesearch",
         [
             "src/field.cpp",
             "src/indexer.cpp",
@@ -110,11 +110,11 @@ class BuildExt(build_ext):
 
 
 setup(
-    name="invind",
+    name="simplesearch",
     version=__version__,
     author="Tomoki Ohtsuki",
     author_email="tomoki.ohtsuki129@gmail.com",
-    description="Yet another CGS sampler for Latent Dirichlet Allocation.",
+    description="Simple search for python/system using json query.",
     long_description="",
     ext_modules=ext_modules,
     install_requires=install_requires,

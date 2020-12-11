@@ -1,4 +1,4 @@
-from invind import Indexer
+from simplesearch import Indexer
 import pandas as pd
 
 indexer = Indexer()

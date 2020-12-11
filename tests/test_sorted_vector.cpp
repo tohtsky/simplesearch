@@ -2,11 +2,11 @@
 #define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this
                           // in one cpp file
 #include "catch.hpp"
-#include "invind/sorted_vector.hpp"
+#include "simplesearch/sorted_vector.hpp"
 
 #include <iostream>
 
-using namespace invind;
+using namespace simplesearch;
 TEST_CASE("basin usage", "[sorted]") {
   // setting up
   SortedVector v1;

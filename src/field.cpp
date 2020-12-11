@@ -1,11 +1,11 @@
-#include "invind/field.hpp"
-#include "invind/sorted_vector.hpp"
+#include "simplesearch/field.hpp"
+#include "simplesearch/sorted_vector.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
 #include <stdexcept>
 
-namespace invind {
+namespace simplesearch {
 BaseField::BaseField() {}
 
 Categorical::Categorical() : BaseField(), value_to_indices() {}
@@ -197,4 +197,4 @@ SortedVector Numeric::get_range_lt(Key ge) const {
 }
 SortedVector Numeric::get_none() const { return this->nones; }
 
-} // namespace invind
+} // namespace simplesearch

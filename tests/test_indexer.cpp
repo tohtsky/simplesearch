@@ -1,10 +1,10 @@
 #include "catch.hpp"
-#include "invind/indexer.hpp"
+#include "simplesearch/indexer.hpp"
 #include <stdexcept>
 
 #include <iostream>
 
-using namespace invind;
+using namespace simplesearch;
 TEST_CASE("basic", "[basic]") {
   Indexer worker;
 

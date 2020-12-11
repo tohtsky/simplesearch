@@ -1,9 +1,9 @@
-#include "invind/indexer.hpp"
-#include "invind/sorted_vector.hpp"
+#include "simplesearch/indexer.hpp"
+#include "simplesearch/sorted_vector.hpp"
 #include <sstream>
 #include <stdexcept>
 
-namespace invind {
+namespace simplesearch {
 Indexer::Query::Query(const Indexer *indexer, const json &query, bool or_scope)
     : query_json(query), indexer(indexer), or_scope(or_scope) {}
 
@@ -284,4 +284,4 @@ SortedVector Indexer::Query::execute() const {
   return result;
 }
 
-} // namespace invind
+} // namespace simplesearch

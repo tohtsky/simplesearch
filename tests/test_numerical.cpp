@@ -1,8 +1,8 @@
 #include "catch.hpp"
-#include "invind/field.hpp"
-#include "invind/indexer.hpp"
+#include "simplesearch/field.hpp"
+#include "simplesearch/indexer.hpp"
 
-using namespace invind;
+using namespace simplesearch;
 
 TEST_CASE("btee", "[usage]") {
   Indexer worker;
@@ -75,7 +75,6 @@ TEST_CASE("btee", "[usage]") {
     auto result2 = worker.query_execute(R"({"nvalue": {"lt":1.00}})"_json);
     REQUIRE(result2.size() == 0);
   }
-
   // somewhat larger lower bounds
   {
     auto result = worker.query_execute(
