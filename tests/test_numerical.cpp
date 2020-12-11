@@ -88,8 +88,21 @@ TEST_CASE("btee", "[usage]") {
     auto result_4 = worker.query_execute(R"({"nvalue": {"gte" : 2.00}})"_json);
     REQUIRE(result_4.size() == 1);
   }
+
   {
     auto result_ = worker.query_execute(R"({"nvalue": {"lte" : 10000}})"_json);
+    REQUIRE(result_.size() == 4);
+  }
+  {
+    auto result_ = worker.query_execute(R"({"nvalue": {"gte" : 10000}})"_json);
+    REQUIRE(result_.size() == 0);
+  }
+  {
+    auto result_ = worker.query_execute(R"({"nvalue": {"lte" : -10000}})"_json);
+    REQUIRE(result_.size() == 0);
+  }
+  {
+    auto result_ = worker.query_execute(R"({"nvalue": {"gte" : -10000}})"_json);
     REQUIRE(result_.size() == 4);
   }
 }
