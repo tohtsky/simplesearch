@@ -1,6 +1,7 @@
 #ifndef INVIND_FIELD_HPP
 #define INVIND_FIELD_HPP
 
+#include "cpp-btree/btree_map.h"
 #include "sorted_vector.hpp"
 #include <cstddef>
 #include <cstdint>
@@ -58,8 +59,10 @@ struct Numeric {
   SortedVector get_none() const;
 
 protected:
-  using MapType = std::map<Key, SortedVector>;
-  MapType value_to_indices;
+  btree::btree_multimap<double, uint64_t> value_storage;
+  SortedVector get_range_generic(Key, Key, bool, bool) const;
+  SortedVector get_right_open_range_generic(Key, bool) const;
+  SortedVector get_left_open_range_generic(Key, bool) const;
 
   SortedVector nones;
 };

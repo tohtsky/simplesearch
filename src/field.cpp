@@ -1,5 +1,6 @@
 #include "simplesearch/field.hpp"
 #include "simplesearch/sorted_vector.hpp"
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
@@ -7,23 +8,7 @@
 
 namespace simplesearch {
 using sorted_vectors_type = std::vector<const SortedVector *>;
-inline SortedVector
-_mergeMultipleSortedVectors(const std::vector<const SortedVector *> &vs) {
-  if (vs.size() == 0) {
-    return SortedVector{false};
-  } else if (vs.size() == 1) {
-    SortedVector result(*vs[0]);
-    return result;
-  } else if (vs.size() == 2) {
-    return vs[0]->set_or(*vs[1]);
-  }
-  std::vector<uint64_t> result;
-  for (auto ptr : vs) {
-    std::copy(ptr->cbegin(), ptr->cend(), std::back_inserter(result));
-  }
-  std::sort(result.begin(), result.end());
-  return SortedVector{std::move(result)};
-}
+
 BaseField::BaseField() {}
 
 Categorical::Categorical() : BaseField(), value_to_indices() {}
@@ -80,145 +65,135 @@ Categorical::include_one(const std::vector<std::string> &values) const {
   return result;
 }
 
-Numeric::Numeric() : value_to_indices(), nones() {}
+Numeric::Numeric() : value_storage(), nones() {}
 void Numeric::add_value(Key value, uint64_t index) {
-  auto iterator = value_to_indices.find(value);
-  if (iterator == value_to_indices.end()) {
-    SortedVector index_vector;
-    index_vector.push_back(index);
-    value_to_indices.insert({value, index_vector});
-  } else {
-    iterator->second.push_back(index);
-  }
+  value_storage.insert({value, index});
 }
 void Numeric::add_none(uint64_t index) { nones.push_back(index); }
+
 SortedVector Numeric::get_match(Key value) const {
-  auto iterator = value_to_indices.find(value);
-  if (iterator == value_to_indices.cend()) {
-    return SortedVector{};
+  using citer = decltype(value_storage.begin());
+  citer iter, end;
+  std::tie(iter, end) = value_storage.equal_range(value);
+  std::vector<uint64_t> indices;
+  while (iter != end) {
+    indices.push_back(iter->second);
+    iter++;
   }
-  return iterator->second;
+  return SortedVector{indices};
 }
 
 SortedVector Numeric::get_range_ge_le(Key le, Key ge) const {
   if (le > ge) {
-
-    SortedVector result;
+    return SortedVector{false};
   }
-  auto it = value_to_indices.lower_bound(le);
-  auto last = value_to_indices.upper_bound(ge);
-  sorted_vectors_type svs;
-  while (it != last) {
-    svs.push_back(&(it->second));
-    ++it;
-  }
-  return _mergeMultipleSortedVectors(svs);
+  return get_range_generic(le, ge, false, false);
 }
 SortedVector Numeric::get_range_ge_lt(Key le, Key gt) const {
   if (le >= gt) {
-    SortedVector result;
-    return result;
+    return SortedVector{false};
   }
-  auto it = value_to_indices.lower_bound(le);
-  auto last = value_to_indices.upper_bound(gt);
-  sorted_vectors_type svs;
-  while (it != last) {
-    if (it->first < gt) {
-      svs.push_back(&(it->second));
-    }
-    ++it;
-  }
-  return _mergeMultipleSortedVectors(svs);
+  return get_range_generic(le, gt, false, true);
 }
+
 SortedVector Numeric::get_range_gt_le(Key lt, Key ge) const {
   if (lt >= ge) {
-
-    SortedVector result;
-    return result;
+    return SortedVector{false};
   }
-  auto it = value_to_indices.lower_bound(lt);
-  auto last = value_to_indices.upper_bound(ge);
-  sorted_vectors_type svs;
-  while (it != last) {
-    if (it->first > lt) {
-      svs.push_back(&(it->second));
-    }
-    ++it;
-  }
-  return _mergeMultipleSortedVectors(svs);
+  return get_range_generic(lt, ge, true, false);
 }
 SortedVector Numeric::get_range_gt_lt(Key lt, Key gt) const {
   if (lt >= gt) {
-    SortedVector result;
-    return result;
+    return SortedVector{false};
   }
-  auto it = value_to_indices.lower_bound(lt);
-  auto last = value_to_indices.upper_bound(gt);
-  sorted_vectors_type svs;
+  return get_range_generic(lt, gt, true, true);
+}
+SortedVector Numeric::get_range_generic(double l, double u, bool lower_strict,
+                                        bool upper_strict) const {
+  auto it = value_storage.lower_bound(l);
+  auto last = value_storage.upper_bound(u);
+  std::vector<uint64_t> indices;
   while (it != last) {
-    if ((it->first > lt) && (it->first < gt)) {
-      svs.push_back(&(it->second));
+    if (lower_strict && ((it->first) == l)) {
+      ++it;
+      continue;
     }
+    if (upper_strict && ((it->first) == u)) {
+      ++it;
+      continue;
+    }
+    indices.push_back(it->second);
     ++it;
   }
-  return _mergeMultipleSortedVectors(svs);
+  std::sort(indices.begin(), indices.end());
+  return {indices};
 }
 
 SortedVector Numeric::get_range_ge(Key le) const {
-  auto it = value_to_indices.lower_bound(le);
-  sorted_vectors_type svs;
-  while (it != value_to_indices.cend()) {
-    svs.push_back(&(it->second));
-    ++it;
-  }
-  return _mergeMultipleSortedVectors(svs);
+  return get_right_open_range_generic(le, false);
 }
-SortedVector Numeric::get_range_gt(Key lt) const {
-  auto it = value_to_indices.lower_bound(lt);
-  sorted_vectors_type svs;
 
-  while (it != value_to_indices.cend()) {
-    if (it->first > lt) {
-      svs.push_back(&(it->second));
+SortedVector Numeric::get_range_gt(Key le) const {
+  return get_right_open_range_generic(le, true);
+}
+
+SortedVector Numeric::get_right_open_range_generic(Key lower_bound,
+                                                   bool strict) const {
+  auto it = value_storage.lower_bound(lower_bound);
+  std::vector<uint64_t> indices;
+
+  while (it != value_storage.end()) {
+    if (strict && (it->first == lower_bound)) {
+      ++it;
+      continue;
     }
+    indices.push_back(it->second);
     ++it;
   }
-  return _mergeMultipleSortedVectors(svs);
+  std::sort(indices.begin(), indices.end());
+  return SortedVector{indices};
 }
+
 SortedVector Numeric::get_range_le(Key ge) const {
-  if (value_to_indices.lower_bound(ge) == value_to_indices.cend()) {
-    // for all value, x >= ge
-    SortedVector result;
-    return result;
-  }
-  auto iter = value_to_indices.cbegin();
-  auto last = value_to_indices.upper_bound(ge);
-  sorted_vectors_type svs;
-  while (iter != last) {
-    svs.push_back(&(iter->second));
-    ++iter;
-  }
-  return _mergeMultipleSortedVectors(svs);
+  return get_left_open_range_generic(ge, false);
 }
 
-SortedVector Numeric::get_range_lt(Key ge) const {
-  if (value_to_indices.lower_bound(ge) == value_to_indices.cend()) {
-    // for all value, x >= ge
-    // x <= ge
+SortedVector Numeric::get_range_lt(Key gt) const {
+  return get_left_open_range_generic(gt, true);
+}
 
-    SortedVector result;
-    return result;
+SortedVector Numeric::get_left_open_range_generic(double u, bool strict) const {
+  /*
+  should consider 4 cases.
+  1) values are empty => return "ALL"
+  2) MAX(values) < u: => return "ALL"
+  4) u < MIN(values) => return "EMPTY"
+  3) MIN(values) <= u
+  */
+  if (value_storage.empty()) {
+    return {false};
   }
-  auto iter = value_to_indices.cbegin();
-  auto last = value_to_indices.upper_bound(ge);
-  sorted_vectors_type svs;
-  while (iter != last) {
-    if (iter->first < ge) {
-      svs.push_back(&(iter->second));
+  auto max_value = value_storage.rbegin()->first;
+  if (u > max_value) {
+    return SortedVector{true};
+  }
+  auto min_value = value_storage.begin()->first;
+  if (u < min_value) {
+    return SortedVector{false};
+  }
+  std::vector<uint64_t> indices;
+  auto iter = value_storage.begin();
+  auto end = value_storage.upper_bound(u);
+  while (iter != end) {
+    if (strict && (iter->first == u)) {
+      ++iter;
+      continue;
     }
+    indices.push_back(iter->second);
     ++iter;
   }
-  return _mergeMultipleSortedVectors(svs);
+  std::sort(indices.begin(), indices.end());
+  return {indices};
 }
 SortedVector Numeric::get_none() const { return this->nones; }
 
