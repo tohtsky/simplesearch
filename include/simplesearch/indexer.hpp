@@ -2,8 +2,8 @@
 #define INVIND_DATA_HPP
 
 #include "field.hpp"
-#include "simplesearch/sorted_vector.hpp"
 #include "nlohmann/json.hpp"
+#include "simplesearch/sorted_vector.hpp"
 #include <cstdint>
 #include <memory>
 #include <string>

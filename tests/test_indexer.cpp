@@ -20,8 +20,8 @@ TEST_CASE("basic", "[basic]") {
       R"({"gender": "M", "location": "J02", "job_categories": null})"_json;
   json data_4 =
       R"({"gender": null, "location": "J02", "job_categories":["2", "3"]})"_json; // bad
-                                                                               // type
-                                                                               // for gender
+                                                                                  // type
+                                                                                  // for gender
 
   worker.add_index(data_1);
   worker.add_index(data_2);
@@ -67,13 +67,24 @@ TEST_CASE("basic", "[basic]") {
     REQUIRE(result.at(0) == 0);
   }
   {
-    auto result = worker.query_execute(
-        R"({"gender": "L"})"_json);
-        REQUIRE(result.size() == 0);
+    auto result = worker.query_execute(R"({"gender": "L"})"_json);
+    REQUIRE(result.size() == 0);
+  }
+  {
+    auto result = worker.query_execute(R"({"gender": null})"_json);
+    REQUIRE(result.size() == 1);
   }
   {
     auto result = worker.query_execute(
-        R"({"gender": null})"_json);
+        R"({"or_scope": {"gender":"F", "job_categories": {"contains_all": ["1", "2", "3"]}}})"_json);
+    REQUIRE(result.size() == 2);
+    REQUIRE(result[0] == 0);
+    REQUIRE(result[1] == 1);
+  }
+  {
+    auto result = worker.query_execute(
+        R"({"and_scope": {"job_categories": ["3"]}, "or_scope": {"gender":"F", "job_categories": {"contains_all": ["1", "2", "3"]}}})"_json);
     REQUIRE(result.size() == 1);
+    REQUIRE(result[0] == 0);
   }
 };

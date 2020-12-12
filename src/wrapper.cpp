@@ -1,7 +1,7 @@
-#include "simplesearch/indexer.hpp"
-#include "simplesearch/sorted_vector.hpp"
 #include "nlohmann/json.hpp"
 #include "pybind11_json/pybind11_json.hpp"
+#include "simplesearch/indexer.hpp"
+#include "simplesearch/sorted_vector.hpp"
 #include <atomic>
 #include <future>
 #include <pybind11/numpy.h>
@@ -15,11 +15,12 @@ using namespace simplesearch;
 
 template <typename T> py::array_t<T> vector_to_np(const std::vector<T> &v) {
   py::array_t<T> np_result(v.size());
-  auto buf = np_result.request();
-  auto buf_ptr = static_cast<T *>(buf.ptr);
-  for (uint64_t i = 0; i < v.size(); i++) {
-    buf_ptr[i] = v[i];
+  if (v.empty()) {
+    return np_result;
   }
+  auto buf = np_result.request();
+  std::memcpy(buf.ptr, static_cast<const void *>(v.data()),
+              v.size() * sizeof(T));
   return np_result;
 }
 

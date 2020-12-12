@@ -1,6 +1,6 @@
 #include "simplesearch/indexer.hpp"
-#include "simplesearch/field.hpp"
 #include "nlohmann/json.hpp"
+#include "simplesearch/field.hpp"
 #include <cstdint>
 #include <sstream>
 #include <stdexcept>

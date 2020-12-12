@@ -41,36 +41,34 @@ void Indexer::Query::raise_numeric_error(const std::string &colname) const {
 }
 
 SortedVector Indexer::Query::execute() const {
+
   SortedVector result{true};
+  if (this->or_scope) {
+    result = SortedVector{false};
+  }
   // categorical
 
   for (const auto &col_index : indexer->categorical_name_to_index_) {
-    auto & field = indexer->categorical_fields[col_index.second];
+    auto &field = indexer->categorical_fields[col_index.second];
     try {
       auto &query_value_ref = query_json.at(col_index.first);
       if (query_value_ref.is_null()) {
         if (this->or_scope) {
-          result = result.set_or(
-              field.get_none());
+          result = result.set_or(field.get_none());
         } else {
-          result = result.set_and(
-              field.get_none());
+          result = result.set_and(field.get_none());
         }
       }
       if (query_value_ref.is_string()) {
         auto query = query_value_ref.get<std::string>();
         if (this->or_scope) {
-          result = result.set_or(
-              field.get_match(query));
+          result = result.set_or(field.get_match(query));
         } else {
-          result = result.set_and(
-              field.get_match(query));
+          result = result.set_and(field.get_match(query));
         }
       } else if (query_value_ref.is_array()) {
         auto query_vals = query_value_ref.get<std::vector<std::string>>();
-        SortedVector subresult =
-            field.include_one(
-                query_vals);
+        SortedVector subresult = field.include_one(query_vals);
         if (this->or_scope) {
           result = result.set_or(subresult);
         } else {
@@ -286,6 +284,26 @@ SortedVector Indexer::Query::execute() const {
     } catch (json::type_error) {
       raise_mtom_error(col_index.first);
     };
+  }
+
+  auto or_scope_json = query_json.find("or_scope");
+  if (or_scope_json != query_json.cend()) {
+    Indexer::Query sub_query(this->indexer, *or_scope_json, true);
+    if (this->or_scope) {
+      result = result.set_or(sub_query.execute());
+    } else {
+      result = result.set_and(sub_query.execute());
+    }
+  }
+
+  auto and_scope_json = query_json.find("and_scope");
+  if (and_scope_json != query_json.cend()) {
+    Indexer::Query sub_query(this->indexer, *and_scope_json, true);
+    if (this->or_scope) {
+      result = result.set_or(sub_query.execute());
+    } else {
+      result = result.set_and(sub_query.execute());
+    }
   }
 
   return result;
