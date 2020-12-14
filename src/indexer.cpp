@@ -95,9 +95,15 @@ std::string Indexer::add_index(const json &data) {
     std::string keyname = c.first;
     try {
       auto &d = data.at(keyname);
-      auto values = d.get<std::vector<std::string>>();
-      for (auto &v : values) {
-        mtom_fields[c.second].add_value(v, index);
+      if (d.is_string()) {
+        mtom_fields[c.second].add_value(d.get<std::string>(), index);
+      } else if (d.is_null()) {
+        mtom_fields[c.second].add_none(index);
+      } else {
+        auto values = d.get<std::vector<std::string>>();
+        for (auto &v : values) {
+          mtom_fields[c.second].add_value(v, index);
+        }
       }
     } catch (nlohmann::json::out_of_range) {
       continue;

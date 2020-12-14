@@ -86,16 +86,14 @@ SortedVector Indexer::Query::execute() const {
   for (const auto &col_index : indexer->mtom_name_to_index_) {
     try {
       auto &query_value_ref = query_json.at(col_index.first);
-      if (query_value_ref.is_null()) {
-        // nothing to specify
-        continue;
-      }
-      if (query_value_ref.is_primitive()) {
-        raise_mtom_error(col_index.first);
-      }
       bool contains_one = true;
       std::vector<std::string> codes;
-      if (query_value_ref.is_array()) {
+      if (query_value_ref.is_null()) {
+        continue;
+      }
+      if (query_value_ref.is_string()) {
+        codes.push_back(query_value_ref.get<std::string>());
+      } else if (query_value_ref.is_array()) {
         codes = query_value_ref.get<std::vector<std::string>>();
       } else if (query_value_ref.find("contains_one") !=
                  query_value_ref.end()) {
