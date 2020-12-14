@@ -68,7 +68,7 @@ print(
                 "job_categories": {"contains_one": ["1", "2", "3"]},
             },
         ],
-    )
+        n_workers=3,
+    ),
 )
-
 ```
